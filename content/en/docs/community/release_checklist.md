@@ -41,7 +41,7 @@ following:
 ```shell
 export RELEASE_NAME=vX.Y.0
 export RELEASE_BRANCH_NAME="release-X.Y"
-export RELEASE_CANDIDATE_NAME="$RELEASE_NAME-rc1"
+export RELEASE_CANDIDATE_NAME="$RELEASE_NAME-rc.1"
 ```
 
 If you are creating a patch release, you may want to use the following instead:
@@ -50,7 +50,7 @@ If you are creating a patch release, you may want to use the following instead:
 export PREVIOUS_PATCH_RELEASE=vX.Y.Z
 export RELEASE_NAME=vX.Y.Z+1
 export RELEASE_BRANCH_NAME="release-X.Y"
-export RELEASE_CANDIDATE_NAME="$RELEASE_NAME-rc1"
+export RELEASE_CANDIDATE_NAME="$RELEASE_NAME-rc.1"
 ```
 
 We are also going to be adding security and verification of the release process
@@ -78,9 +78,11 @@ Debian](https://debian-administration.org/article/451/Submitting_your_GPG_key_to
 ### Major/Minor Releases
 
 Major releases are for new feature additions and behavioral changes *that break
-backwards compatibility*. Minor releases are for new feature additions that do
-not break backwards compatibility. To create a major or minor release, start by
-creating a `release-vX.Y.0` branch from master.
+backwards compatibility*. Minor releases are for new feature additions, bug
+fixes and code refactors that do not break backwards compatibility.
+
+To create a major or minor release, start by creating a `release-vX.Y.0`
+branch from master.
 
 ```shell
 git fetch upstream
@@ -125,29 +127,28 @@ see that the release passed CI before proceeding.
 
 ## 2. Change the Version Number in Git
 
-When doing a minor release, make sure to update pkg/version/version.go with the
+When doing a minor release, make sure to update internal/version/version.go with the
 new release version.
 
 ```shell
-$ git diff pkg/version/version.go
-diff --git a/pkg/version/version.go b/pkg/version/version.go
-index 2109a0a..6f5a1a4 100644
---- a/pkg/version/version.go
-+++ b/pkg/version/version.go
-@@ -26,7 +26,7 @@ var (
+diff --git a/internal/version/version.go b/internal/version/version.go
+index ff0df0f9..fd061692 100644
+--- a/internal/version/version.go
++++ b/internal/version/version.go
+@@ -30,7 +30,7 @@ var (
         // Increment major number for new feature additions and behavioral changes.
         // Increment minor number for bug fixes and performance enhancements.
         // Increment patch number for critical fixes to existing releases.
--       Version = "v2.6"
-+       Version = "v2.7"
+-       version = "v3.0"
++       version = "v3.1"
 
-        // BuildMetadata is extra build time data
-        BuildMetadata = "unreleased"
+        // metadata is extra build time data
+        metadata = ""
 ```
 
 ```shell
 git add .
-git commit -m "bump version to $RELEASE_CANDIDATE_NAME"
+git commit -m "bump version to vX.Y"
 ```
 
 This will update it for the $RELEASE_BRANCH_NAME only. You will also need to
@@ -167,6 +168,9 @@ git cherry-pick -x <commit-id>
 
 # commit the change
 git push origin bump-version-<release-version>
+
+# open a pull request!
+open https://github.com/helm/helm/compare/master...<username>:bump-version-<release-version>
 ```
 
 ## 3. Major/Minor releases: Commit and Push the Release Branch
@@ -252,7 +256,7 @@ did in steps 2 and 3 as separate commits.
 After that, tag it and notify users of the new release candidate:
 
 ```shell
-export RELEASE_CANDIDATE_NAME="$RELEASE_NAME-rc2"
+export RELEASE_CANDIDATE_NAME="$RELEASE_NAME-rc.2"
 git tag --sign --annotate "${RELEASE_CANDIDATE_NAME}" --message "Helm release ${RELEASE_CANDIDATE_NAME}"
 git push upstream $RELEASE_CANDIDATE_NAME
 ```
